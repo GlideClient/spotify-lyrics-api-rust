@@ -1,0 +1,8 @@
+# Spotify Lyrics API Configuration
+
+# Your Spotify cookie value (required)
+# This is the value of the SP_DC cookie from your Spotify web session
+sp_dc = "YOUR_SP_DC_COOKIE_VALUE_HERE"
+
+# Server port (optional, defaults to 8080 if not specified)
+# port = 8080
