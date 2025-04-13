@@ -23,8 +23,8 @@ A Rust-based API server that fetches synchronized lyrics from Spotify and provid
 
 1. Clone the repository:
 ```sh
-git clone https://github.com/yourusername/spotifylyricsapi.git
-cd spotifylyricsapi
+git clone https://github.com/GlideClient/spotify-lyrics-api-rust.git
+cd spotify-lyrics-api-rust
 ```
 
 2. Build the project:
