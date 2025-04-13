@@ -34,6 +34,36 @@ cargo build --release
 
 3. The compiled binary will be available at `target/release/spotifylyricsapi`
 
+### Using Docker
+
+You can run the application using Docker in two ways:
+
+#### Using Docker directly
+
+1. Build the Docker image:
+```sh
+docker build -t spotifylyricsapi .
+```
+
+2. Run the container:
+```sh
+docker run -d -p 8080:8080 -e SP_DC=your_spotify_cookie_value spotifylyricsapi
+```
+
+#### Using Docker Compose
+
+1. Set your SP_DC environment variable:
+```sh
+export SP_DC=your_spotify_cookie_value
+```
+
+2. Run with docker-compose:
+```sh
+docker-compose up -d
+```
+
+This will build the image if it doesn't exist and start the container.
+
 ## Configuration
 
 Create a `config.toml` file in one of these locations:

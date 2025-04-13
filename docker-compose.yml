@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  spotifylyricsapi:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SP_DC=${SP_DC}
+      - PORT=8080
+    volumes:
+      - spotify_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  spotify_data:
+    driver: local
