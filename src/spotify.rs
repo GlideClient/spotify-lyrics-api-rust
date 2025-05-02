@@ -185,7 +185,7 @@ impl Spotify {
         
         let mut params = HashMap::new();
         params.insert("reason".to_string(), "transport".to_string());
-        params.insert("productType".to_string(), "web_player".to_string());
+        params.insert("productType".to_string(), "web-player".to_string());
         params.insert("totp".to_string(), totp.clone());
         params.insert("totpServer".to_string(), totp);
         params.insert("totpVer".to_string(), "5".to_string());
