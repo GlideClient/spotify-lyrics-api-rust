@@ -78,7 +78,7 @@ impl Spotify {
         Spotify {
             token_url: "https://open.spotify.com/api/token".to_string(),
             lyrics_url: "https://spclient.wg.spotify.com/color-lyrics/v2/track/".to_string(),
-            server_time_url: "https://open.spotify.com/server-time".to_string(),
+            server_time_url: "https://open.spotify.com/api/server-time".to_string(),
             sp_dc,
             cache_file,
         }
