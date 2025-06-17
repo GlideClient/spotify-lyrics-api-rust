@@ -76,7 +76,7 @@ impl Spotify {
         let cache_file = std::env::temp_dir().join("spotify_token.json");
         
         Spotify {
-            token_url: "https://open.spotify.com/get_access_token".to_string(),
+            token_url: "https://open.spotify.com/api/token".to_string(),
             lyrics_url: "https://spclient.wg.spotify.com/color-lyrics/v2/track/".to_string(),
             server_time_url: "https://open.spotify.com/server-time".to_string(),
             sp_dc,
