@@ -2,21 +2,27 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum SpotifyException {
+    #[error("Rate limited by Spotify. Please try again later.")]
+    RateLimited { retry_after: Option<String> },
+
+    #[error("Lyrics for this track were not found on Spotify.")]
+    NotFound,
+
     #[error("Spotify API error: {0}")]
     ApiError(String),
-    
+
     #[error("HTTP request error: {0}")]
     RequestError(#[from] reqwest::Error),
-    
+
     #[error("JSON parsing error: {0}")]
     JsonError(#[from] serde_json::Error),
-    
+
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
-    
+
     #[error("URL encoding error: {0}")]
     UrlEncodedError(#[from] serde_urlencoded::ser::Error),
-    
+
     #[error("{0}")]
     Generic(String),
 }

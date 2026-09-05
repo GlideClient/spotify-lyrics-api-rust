@@ -5,12 +5,38 @@ A Rust-based API server that fetches synchronized lyrics from Spotify and provid
 ## Features
 
 - Fetch time-synchronized lyrics from Spotify's internal API
-- Support for multiple output formats (ID3, LRC)
+- Support for multiple output formats (ID3, LRC, SRT, raw text)
 - Simple HTTP endpoint for easy integration with other applications
 - CORS support for web applications
 - Configurable via config file or environment variables
 - Automatic token management and caching
 - Extract track IDs from full Spotify URLs
+
+## Upstream authorization compatibility
+
+The authorization flow and response formats are aligned with
+[spotify-lyrics-api at `e158b96`](https://github.com/akashrchandran/spotify-lyrics-api/tree/e158b96)
+(main as checked on 2026-09-06). The Rust port previously hardcoded TOTP version 5;
+Spotify rejecting that obsolete token request could produce HTTP 400 errors.
+
+On token refresh, the server now fetches Spotify's server time and the latest
+numeric version from upstream's
+[secret dictionary](https://github.com/xyloflake/spot-secrets-go/blob/main/secrets/secretDict.json).
+It applies upstream's secret transformation, generates the six-digit TOTP, and
+sends `reason`, `productType`, `totp`, `totpVer`, and `ts` to the token endpoint.
+The dictionary request does not receive your `SP_DC` cookie. Outbound HTTPS
+certificate verification stays enabled, and requests have bounded timeouts.
+
+A valid `SP_DC` cookie is still required. This update cannot renew an expired or
+revoked cookie. Token responses are validated before being cached; an anonymous
+response reports that the cookie needs replacing. Corrupt cache files are
+refreshed, and completed token files are published atomically. HTTP 401 lyrics
+responses trigger at most one token refresh and retry.
+
+After updating, rebuild and restart the deployed server (for Compose:
+`docker compose up -d --build`). Changing only the client URL does not update an
+already running backend. Outbound access is needed to `open.spotify.com`,
+`spclient.wg.spotify.com`, and `raw.githubusercontent.com`.
 
 ## Requirements
 
@@ -29,7 +55,7 @@ cd spotify-lyrics-api-rust
 
 2. Build the project:
 ```sh
-cargo build --release
+cargo build --release --locked
 ```
 
 3. The compiled binary will be available at `target/release/spotifylyricsapi`
@@ -113,7 +139,7 @@ Fetches lyrics for a Spotify track.
 **Query Parameters:**
 - `trackid`: The Spotify track ID (Required if URL is not provided)
 - `url`: A Spotify track URL (Required if trackid is not provided)
-- `format`: Output format - either `id3` or `lrc` (Default: `id3`)
+- `format`: Output format - `id3`, `lrc`, `srt`, or `raw` (Default: `id3`)
 
 **Examples:**
 - Using track ID: `http://localhost:8080/?trackid=4cOdK2wGLETKBW3PvgPWqT`
@@ -150,6 +176,11 @@ Fetches lyrics for a Spotify track.
 }
 ```
 
+**Additional formats:**
+- `format=srt`: JSON `lines` contains entries with `index`, `startTime`, `endTime`, and `words`. Each entry ends when the following line starts, matching upstream.
+- `format=raw`: JSON `lines` contains one newline-separated string.
+- The default `id3` format preserves Spotify's original line fields, including syllables and end times.
+
 ### Error Responses
 
 **400 Bad Request:**
@@ -167,6 +198,23 @@ Fetches lyrics for a Spotify track.
   "message": "lyrics for this track is not available on spotify!"
 }
 ```
+
+**429 Too Many Requests:** Spotify rate limits are returned as HTTP 429, with
+`Retry-After` forwarded when the upstream response provides it. Missing lyrics
+return HTTP 404; other upstream failures return a JSON error rather than lyrics.
+
+## Development checks
+
+```sh
+cargo fmt --check
+cargo test --locked
+cargo clippy --locked --all-targets
+```
+
+Tests use a local mock server and synthetic credentials. They cover dynamic
+secret selection, known TOTP vectors, token parameters and caching, invalid
+cookies, refresh-on-401, error status propagation, and response formats. They do
+not verify live account authorization.
 
 ## Integration Examples
 
